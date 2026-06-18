@@ -3,15 +3,6 @@
   "installCommand": "pnpm install",
   "framework": "other",
   "outputDirectory": "artifacts/tesla-invest/dist",
-  "env": [
-    "DATABASE_URL",
-    "JWT_SECRET",
-    "NOWPAYMENTS_API_KEY",
-    "NOWPAYMENTS_IPN_SECRET",
-    "SENDGRID_API_KEY",
-    "NEXT_PUBLIC_SUPABASE_URL",
-    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"
-  ],
   "functions": {
     "api/**": {
       "runtime": "nodejs18.x"
