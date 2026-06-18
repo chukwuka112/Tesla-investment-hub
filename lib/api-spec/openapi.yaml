@@ -3,20 +3,42 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Tesla Invest Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: profile
+    description: User profile operations
+  - name: plans
+    description: Investment plans
+  - name: investments
+    description: User investments
+  - name: deposits
+    description: Deposit operations
+  - name: withdrawals
+    description: Withdrawal operations
+  - name: referrals
+    description: Referral system
+  - name: gift-codes
+    description: Gift code operations
+  - name: notifications
+    description: Notifications
+  - name: announcements
+    description: Announcements
+  - name: admin
+    description: Admin operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +46,856 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # AUTH
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register new user (sends OTP)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "200":
+          description: OTP sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/verify-otp:
+    post:
+      operationId: verifyOtp
+      tags: [auth]
+      summary: Verify OTP and complete registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpVerifyInput"
+      responses:
+        "200":
+          description: Account created and logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid OTP
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/resend-otp:
+    post:
+      operationId: resendOtp
+      tags: [auth]
+      summary: Resend OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResendOtpInput"
+      responses:
+        "200":
+          description: OTP resent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/forgot-password:
+    post:
+      operationId: forgotPassword
+      tags: [auth]
+      summary: Send password reset OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordInput"
+      responses:
+        "200":
+          description: Reset OTP sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/reset-password:
+    post:
+      operationId: resetPassword
+      tags: [auth]
+      summary: Reset password with OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordInput"
+      responses:
+        "200":
+          description: Password reset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # PROFILE
+  /profile:
+    patch:
+      operationId: updateProfile
+      tags: [profile]
+      summary: Update user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /profile/dashboard:
+    get:
+      operationId: getDashboard
+      tags: [profile]
+      summary: Get dashboard summary (balance, earnings, stats)
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  # PLANS
+  /plans:
+    get:
+      operationId: getPlans
+      tags: [plans]
+      summary: Get all active investment plans
+      responses:
+        "200":
+          description: List of plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InvestmentPlan"
+
+  # INVESTMENTS
+  /investments:
+    get:
+      operationId: getInvestments
+      tags: [investments]
+      summary: Get user investments
+      responses:
+        "200":
+          description: List of investments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserInvestment"
+
+    post:
+      operationId: createInvestment
+      tags: [investments]
+      summary: Create a new investment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvestmentInput"
+      responses:
+        "201":
+          description: Investment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserInvestment"
+
+  # DEPOSITS
+  /deposits:
+    get:
+      operationId: getDeposits
+      tags: [deposits]
+      summary: Get user deposits
+      responses:
+        "200":
+          description: List of deposits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deposit"
+
+    post:
+      operationId: createDeposit
+      tags: [deposits]
+      summary: Initiate a deposit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepositInput"
+      responses:
+        "201":
+          description: Deposit initiated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DepositInitResponse"
+
+  /deposits/webhook:
+    post:
+      operationId: depositWebhook
+      tags: [deposits]
+      summary: NowPayments IPN webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookPayload"
+      responses:
+        "200":
+          description: Webhook processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  # WITHDRAWALS
+  /withdrawals:
+    get:
+      operationId: getWithdrawals
+      tags: [withdrawals]
+      summary: Get user withdrawals
+      responses:
+        "200":
+          description: List of withdrawals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Withdrawal"
+
+    post:
+      operationId: createWithdrawal
+      tags: [withdrawals]
+      summary: Request a withdrawal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawalInput"
+      responses:
+        "201":
+          description: Withdrawal requested
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+
+  # REFERRALS
+  /referrals:
+    get:
+      operationId: getReferrals
+      tags: [referrals]
+      summary: Get referral info and tree
+      responses:
+        "200":
+          description: Referral data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralData"
+
+  /referrals/leaderboard:
+    get:
+      operationId: getReferralLeaderboard
+      tags: [referrals]
+      summary: Get referral leaderboard
+      responses:
+        "200":
+          description: Leaderboard
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeaderboardEntry"
+
+  # GIFT CODES
+  /gift-codes/redeem:
+    post:
+      operationId: redeemGiftCode
+      tags: [gift-codes]
+      summary: Redeem a gift code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GiftCodeRedeemInput"
+      responses:
+        "200":
+          description: Gift code redeemed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GiftCodeRedeemResponse"
+
+  # NOTIFICATIONS
+  /notifications:
+    get:
+      operationId: getNotifications
+      tags: [notifications]
+      summary: Get user notifications
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "200":
+          description: Marked read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /notifications/{id}/read:
+    patch:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark a notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Notification marked read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  # ANNOUNCEMENTS
+  /announcements:
+    get:
+      operationId: getAnnouncements
+      tags: [announcements]
+      summary: Get active announcements
+      responses:
+        "200":
+          description: Announcements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Announcement"
+
+  # ADMIN
+  /admin/users:
+    get:
+      operationId: adminGetUsers
+      tags: [admin]
+      summary: Get all users (admin)
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Users list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserList"
+
+  /admin/users/{id}:
+    get:
+      operationId: adminGetUser
+      tags: [admin]
+      summary: Get user details (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserDetail"
+
+    patch:
+      operationId: adminUpdateUser
+      tags: [admin]
+      summary: Update user (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminUserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /admin/deposits:
+    get:
+      operationId: adminGetDeposits
+      tags: [admin]
+      summary: Get all deposits (admin)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deposits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deposit"
+
+  /admin/deposits/{id}/approve:
+    post:
+      operationId: adminApproveDeposit
+      tags: [admin]
+      summary: Approve a deposit (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deposit approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deposit"
+
+  /admin/deposits/{id}/reject:
+    post:
+      operationId: adminRejectDeposit
+      tags: [admin]
+      summary: Reject a deposit (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deposit rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deposit"
+
+  /admin/withdrawals:
+    get:
+      operationId: adminGetWithdrawals
+      tags: [admin]
+      summary: Get all withdrawals (admin)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Withdrawals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Withdrawal"
+
+  /admin/withdrawals/{id}/approve:
+    post:
+      operationId: adminApproveWithdrawal
+      tags: [admin]
+      summary: Approve a withdrawal (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Withdrawal approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+
+  /admin/withdrawals/{id}/reject:
+    post:
+      operationId: adminRejectWithdrawal
+      tags: [admin]
+      summary: Reject a withdrawal (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Withdrawal rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+
+  /admin/plans:
+    get:
+      operationId: adminGetPlans
+      tags: [admin]
+      summary: Get all plans (admin)
+      responses:
+        "200":
+          description: Plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InvestmentPlan"
+
+    post:
+      operationId: adminCreatePlan
+      tags: [admin]
+      summary: Create investment plan (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanInput"
+      responses:
+        "201":
+          description: Plan created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvestmentPlan"
+
+  /admin/plans/{id}:
+    patch:
+      operationId: adminUpdatePlan
+      tags: [admin]
+      summary: Update investment plan (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanUpdate"
+      responses:
+        "200":
+          description: Plan updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvestmentPlan"
+
+    delete:
+      operationId: adminDeletePlan
+      tags: [admin]
+      summary: Delete investment plan (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Plan deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /admin/gift-codes:
+    get:
+      operationId: adminGetGiftCodes
+      tags: [admin]
+      summary: Get all gift codes (admin)
+      responses:
+        "200":
+          description: Gift codes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GiftCode"
+
+    post:
+      operationId: adminCreateGiftCode
+      tags: [admin]
+      summary: Create gift code (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GiftCodeInput"
+      responses:
+        "201":
+          description: Gift code created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GiftCode"
+
+  /admin/gift-codes/{id}:
+    delete:
+      operationId: adminDeleteGiftCode
+      tags: [admin]
+      summary: Delete gift code (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Gift code deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /admin/announcements:
+    post:
+      operationId: adminCreateAnnouncement
+      tags: [admin]
+      summary: Create announcement (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementInput"
+      responses:
+        "201":
+          description: Announcement created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+
+  /admin/announcements/{id}:
+    delete:
+      operationId: adminDeleteAnnouncement
+      tags: [admin]
+      summary: Delete announcement (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /admin/analytics:
+    get:
+      operationId: adminGetAnalytics
+      tags: [admin]
+      summary: Get analytics dashboard (admin)
+      responses:
+        "200":
+          description: Analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAnalytics"
+
+  /admin/audit-logs:
+    get:
+      operationId: adminGetAuditLogs
+      tags: [admin]
+      summary: Get audit logs (admin)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Audit logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditLog"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +903,621 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    RegisterInput:
+      type: object
+      required: [full_name, email, password]
+      properties:
+        full_name:
+          type: string
+          minLength: 2
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        referral_code:
+          type: ["string", "null"]
+
+    OtpVerifyInput:
+      type: object
+      required: [email, otp]
+      properties:
+        email:
+          type: string
+          format: email
+        otp:
+          type: string
+          minLength: 6
+          maxLength: 6
+
+    ResendOtpInput:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    ForgotPasswordInput:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    ResetPasswordInput:
+      type: object
+      required: [email, otp, new_password]
+      properties:
+        email:
+          type: string
+          format: email
+        otp:
+          type: string
+        new_password:
+          type: string
+          minLength: 8
+
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/UserProfile"
+
+    UserProfile:
+      type: object
+      required: [id, email, full_name, balance, total_earnings, total_deposits, total_withdrawals, referral_code, referral_earnings, role, is_active, email_verified, created_at]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        full_name:
+          type: string
+        balance:
+          type: number
+        total_earnings:
+          type: number
+        total_deposits:
+          type: number
+        total_withdrawals:
+          type: number
+        referral_code:
+          type: string
+        referral_earnings:
+          type: number
+        role:
+          type: string
+        is_active:
+          type: boolean
+        email_verified:
+          type: boolean
+        avatar_url:
+          type: ["string", "null"]
+        created_at:
+          type: string
+
+    ProfileUpdate:
+      type: object
+      properties:
+        full_name:
+          type: string
+        avatar_url:
+          type: ["string", "null"]
+
+    DashboardSummary:
+      type: object
+      required: [balance, total_earnings, total_deposits, total_withdrawals, referral_earnings, active_investments_count, active_investments_value, unread_notifications]
+      properties:
+        balance:
+          type: number
+        total_earnings:
+          type: number
+        total_deposits:
+          type: number
+        total_withdrawals:
+          type: number
+        referral_earnings:
+          type: number
+        active_investments_count:
+          type: integer
+        active_investments_value:
+          type: number
+        unread_notifications:
+          type: integer
+
+    InvestmentPlan:
+      type: object
+      required: [id, name, image_url, min_amount, max_amount, roi_percentage, duration_days, status, display_order]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        model_name:
+          type: string
+        image_url:
+          type: string
+        min_amount:
+          type: number
+        max_amount:
+          type: number
+        roi_percentage:
+          type: number
+        duration_days:
+          type: integer
+        description:
+          type: ["string", "null"]
+        status:
+          type: string
+        display_order:
+          type: integer
+        created_at:
+          type: string
+
+    UserInvestment:
+      type: object
+      required: [id, user_id, plan_id, amount, daily_earnings, total_earned, status, start_date, end_date, created_at]
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        plan_id:
+          type: string
+        plan:
+          $ref: "#/components/schemas/InvestmentPlan"
+        amount:
+          type: number
+        daily_earnings:
+          type: number
+        total_earned:
+          type: number
+        status:
+          type: string
+        start_date:
+          type: string
+        end_date:
+          type: string
+        progress_percentage:
+          type: number
+        created_at:
+          type: string
+
+    InvestmentInput:
+      type: object
+      required: [plan_id, amount]
+      properties:
+        plan_id:
+          type: string
+        amount:
+          type: number
+
+    Deposit:
+      type: object
+      required: [id, user_id, amount, currency, status, created_at]
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        payment_id:
+          type: ["string", "null"]
+        payment_address:
+          type: ["string", "null"]
+        status:
+          type: string
+        created_at:
+          type: string
+
+    DepositInput:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: number
+        currency:
+          type: string
+
+    DepositInitResponse:
+      type: object
+      required: [deposit_id, payment_id, payment_address, amount, currency, status]
+      properties:
+        deposit_id:
+          type: string
+        payment_id:
+          type: string
+        payment_address:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+
+    WebhookPayload:
+      type: object
+      properties:
+        payment_id:
+          type: ["string", "null"]
+        payment_status:
+          type: ["string", "null"]
+        pay_address:
+          type: ["string", "null"]
+        price_amount:
+          type: ["number", "null"]
+        price_currency:
+          type: ["string", "null"]
+        pay_amount:
+          type: ["number", "null"]
+        actually_paid:
+          type: ["number", "null"]
+        pay_currency:
+          type: ["string", "null"]
+        order_id:
+          type: ["string", "null"]
+        order_description:
+          type: ["string", "null"]
+
+    Withdrawal:
+      type: object
+      required: [id, user_id, amount, wallet_address, status, created_at]
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        amount:
+          type: number
+        wallet_address:
+          type: string
+        network:
+          type: ["string", "null"]
+        status:
+          type: string
+        admin_note:
+          type: ["string", "null"]
+        created_at:
+          type: string
+
+    WithdrawalInput:
+      type: object
+      required: [amount, wallet_address]
+      properties:
+        amount:
+          type: number
+        wallet_address:
+          type: string
+        network:
+          type: ["string", "null"]
+
+    ReferralData:
+      type: object
+      required: [referral_code, referral_link, total_referrals, total_earnings, level1_count, level2_count, level3_count, referrals]
+      properties:
+        referral_code:
+          type: string
+        referral_link:
+          type: string
+        total_referrals:
+          type: integer
+        total_earnings:
+          type: number
+        level1_count:
+          type: integer
+        level2_count:
+          type: integer
+        level3_count:
+          type: integer
+        referrals:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReferralMember"
+
+    ReferralMember:
+      type: object
+      required: [id, full_name, level, total_invested, earnings, joined_at]
+      properties:
+        id:
+          type: string
+        full_name:
+          type: string
+        level:
+          type: integer
+        total_invested:
+          type: number
+        earnings:
+          type: number
+        joined_at:
+          type: string
+
+    LeaderboardEntry:
+      type: object
+      required: [rank, user_id, full_name, total_referrals, total_earnings]
+      properties:
+        rank:
+          type: integer
+        user_id:
+          type: string
+        full_name:
+          type: string
+        total_referrals:
+          type: integer
+        total_earnings:
+          type: number
+
+    GiftCode:
+      type: object
+      required: [id, code, reward_amount, max_uses, uses_count, expires_at, is_active, created_at]
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        reward_amount:
+          type: number
+        max_uses:
+          type: integer
+        uses_count:
+          type: integer
+        expires_at:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+
+    GiftCodeInput:
+      type: object
+      required: [reward_amount, max_uses, expires_at]
+      properties:
+        reward_amount:
+          type: number
+        max_uses:
+          type: integer
+        expires_at:
+          type: string
+
+    GiftCodeRedeemInput:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+
+    GiftCodeRedeemResponse:
+      type: object
+      required: [message, reward_amount, new_balance]
+      properties:
+        message:
+          type: string
+        reward_amount:
+          type: number
+        new_balance:
+          type: number
+
+    Notification:
+      type: object
+      required: [id, user_id, type, title, message, is_read, created_at]
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        type:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+
+    Announcement:
+      type: object
+      required: [id, title, content, is_pinned, is_active, created_at]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        is_pinned:
+          type: boolean
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+
+    AnnouncementInput:
+      type: object
+      required: [title, content]
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        is_pinned:
+          type: boolean
+
+    AdminUserList:
+      type: object
+      required: [users, total, page, limit]
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserProfile"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    AdminUserDetail:
+      type: object
+      required: [user, investments, deposits, withdrawals, notifications]
+      properties:
+        user:
+          $ref: "#/components/schemas/UserProfile"
+        investments:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserInvestment"
+        deposits:
+          type: array
+          items:
+            $ref: "#/components/schemas/Deposit"
+        withdrawals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Withdrawal"
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+
+    AdminUserUpdate:
+      type: object
+      properties:
+        full_name:
+          type: string
+        balance:
+          type: number
+        is_active:
+          type: boolean
+        role:
+          type: string
+
+    PlanInput:
+      type: object
+      required: [name, image_url, min_amount, max_amount, roi_percentage, duration_days]
+      properties:
+        name:
+          type: string
+        model_name:
+          type: string
+        image_url:
+          type: string
+        min_amount:
+          type: number
+        max_amount:
+          type: number
+        roi_percentage:
+          type: number
+        duration_days:
+          type: integer
+        description:
+          type: string
+        status:
+          type: string
+        display_order:
+          type: integer
+
+    PlanUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        model_name:
+          type: string
+        image_url:
+          type: string
+        min_amount:
+          type: number
+        max_amount:
+          type: number
+        roi_percentage:
+          type: number
+        duration_days:
+          type: integer
+        description:
+          type: string
+        status:
+          type: string
+        display_order:
+          type: integer
+
+    AdminAnalytics:
+      type: object
+      required: [total_users, active_users, total_deposits, total_withdrawals, total_investments, total_balance, new_users_today, deposits_today, withdrawals_today]
+      properties:
+        total_users:
+          type: integer
+        active_users:
+          type: integer
+        total_deposits:
+          type: number
+        total_withdrawals:
+          type: number
+        total_investments:
+          type: number
+        total_balance:
+          type: number
+        new_users_today:
+          type: integer
+        deposits_today:
+          type: number
+        withdrawals_today:
+          type: number
+
+    AuditLog:
+      type: object
+      required: [id, admin_id, action, target_type, created_at]
+      properties:
+        id:
+          type: string
+        admin_id:
+          type: string
+        admin_name:
+          type: string
+        action:
+          type: string
+        target_type:
+          type: string
+        target_id:
+          type: ["string", "null"]
+        details:
+          type: ["string", "null"]
+        created_at:
+          type: string
