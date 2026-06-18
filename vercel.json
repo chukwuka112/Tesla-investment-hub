@@ -1,7 +1,7 @@
 {
   "buildCommand": "pnpm run build",
   "installCommand": "pnpm install",
-  "framework": "other",
+  "framework": "vite",
   "outputDirectory": "artifacts/tesla-invest/dist",
   "functions": {
     "api/**": {
